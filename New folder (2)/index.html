@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box To Box Game</title>
+    <style>
+        /* التصميم الأساسي */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1d;
+            color: #f0e6d2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #e94560;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            background-color: #2e2e38;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clubs-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 25px 0;
+        }
+
+        .club {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #f9c74f;
+            border: 3px solid #f0e6d2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .club img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .arrow {
+            font-size: 2.5em;
+            color: #f9c74f;
+            transform: rotate(45deg);
+        }
+
+        .question {
+            font-size: 1.4em;
+            color: #f9c74f;
+            margin-top: 25px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            font-size: 1em;
+            width: 80%;
+            max-width: 300px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #ffffff;
+            background-color: #e94560;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #b83242;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #16a085;
+            transition: color 0.3s;
+        }
+
+        .result.incorrect {
+            color: #e74c3c;
+        }
+
+        .player-turn {
+            font-size: 1.7em;
+            font-weight: bold;
+            color: #3498db;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Box To Box</h1>
+        <div class="player-turn" id="playerTurn">P1's Turn</div>
+        
+        <div class="clubs-container">
+            <div class="club" id="club1">
+                <img src="" alt="Club 1">
+            </div>
+            <div class="arrow">➡️</div>
+            <div class="club" id="club2">
+                <img src="" alt="Club 2">
+            </div>
+        </div>
+
+        <div class="question" id="question">جاري تحميل السؤال...</div>
+        
+        <input type="text" id="playerInput" placeholder="اكتب اسم اللاعب">
+        <button onclick="checkAnswer()">إجابة</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // بيانات الفرق
+        const clubs = [
+            { name: "Al Ahly", image: "AlAhly.png" },
+            { name: "Al Ittihad Alexandria", image: "Al-Ittihad_Alexandria_Club_logo.png" },
+            { name: "Cleopatra", image: "cleoparra.png" },
+            { name: "El Gouna", image: "El_Gouna_FC_Logo.png" },
+            { name: "Enppi", image: "Enppi_Egyptian_Soccer_Club-logo-1219612C47-seeklogo.com.png" },
+            { name: "Ghazl El Mahalla", image: "Ghazl_El_Mahalla_SC_new_logo.png" },
+            { name: "Haras El Hodoud", image: "Haras_El_Hodoud_logo_2018.png" },
+            { name: "Ismaily", image: "Ismaily_SC_logo.png" },
+            { name: "Masry", image: "Masry.png" },
+            { name: "Modern Sport", image: "modern sport.png" },
+            { name: "Petrojet", image: "Petrojet-Club-Logo.png" },
+            { name: "Pharco", image: "pharco.png" },
+            { name: "Pyramids", image: "Pyramids_F.C_(2018).png" },
+            { name: "Smouha", image: "Smouha_SC_logo.png" },
+            { name: "Talaea El Gaish", image: "talaeaelgaish.jpg" },
+            { name: "Zamalek", image: "Zamalek_Logo.svg.png" },
+            { name: "ZED FC", image: "ZED_FC_logo.png" },
+            { name: "Al Bank Al Ahli", image: "نادي_البنك_الأهلي_المصري.jpg" }
+        ];
+
+        // بيانات انتقال اللاعبين وأسئلة صعبة بالعربي
+        const transfers = [
+            { from: "Al Ahly", to: "Zamalek", player: "أحمد فتحي", year: 2010, details: "لاعب وسط انتقل عام 2010 بعد صراع طويل مع عدة أندية." },
+            { from: "Pyramids", to: "Ismaily", player: "عبد الله السعيد", year: 2015, details: "انتقل بعد تألق في الأهلي لينضم لبيراميدز ومن ثم للإسماعيلي." },
+            { from: "El Gouna", to: "Enppi", player: "محمود تريزيجيه", year: 2014, details: "انتقل بعد تجربة احترافية قصيرة في الجونة ثم عاد للدوري المصري." },
+            { from: "Masry", to: "Al Ahly", player: "عمرو جمال", year: 2012, details: "مهاجم انتقل بعد مسيرة ناجحة مع المصري ليواصل التألق مع الأهلي." },
+            { from: "Smouha", to: "Cleopatra", player: "طارق حامد", year: 2018, details: "أحد أبرز لاعبي خط الوسط، شارك مع سموحة في بطولات قارية." },
+            { from: "Ismaily", to: "Zamalek", player: "محمد صبحي", year: 2006, details: "حارس مرمى عريق، شارك مع الإسماعيلي لسنوات عديدة قبل انتقاله." },
+            { from: "Enppi", to: "Haras El Hodoud", player: "علي جبر", year: 2016, details: "مدافع قوي انضم لحرس الحدود بعد أداء مميز مع إنبي." },
+            { from: "Petrojet", to: "Al Bank Al Ahli", player: "عمر جابر", year: 2020, details: "لاعب متعدد المراكز، انتقل بعد تألق في بيراميدز." },
+            { from: "Talaea El Gaish", to: "Pyramids", player: "أحمد سامي", year: 2021, details: "مدافع صلب، شارك مع طلائع الجيش قبل انتقاله لبيراميدز." },
+            { from: "Ghazl El Mahalla", to: "ZED FC", player: "صلاح محسن", year: 2017, details: "موهبة شابة، برز في الدوري وانتقل بعدها لنادي زيد." }
+        ];
+
+        let currentTransfer;
+        let currentPlayer = "P1";
+
+        function loadQuestion() {
+            currentTransfer = transfers[Math.floor(Math.random() * transfers.length)];
+            
+            const club1 = clubs.find(club => club.name === currentTransfer.from);
+            const club2 = clubs.find(club => club.name === currentTransfer.to);
+
+            document.getElementById("club1").querySelector("img").src = club1.image;
+            document.getElementById("club2").querySelector("img").src = club2.image;
+
+            document.getElementById("question").innerText = `ما هو اسم اللاعب الذي انتقل من ${currentTransfer.from} إلى ${currentTransfer.to} عام ${currentTransfer.year}؟\n${currentTransfer.details}`;
+        }
+
+        function checkAnswer() {
+            const answer = document.getElementById("playerInput").value.trim();
+            const result = document.getElementById("result");
+
+            if (answer === currentTransfer.player) {
+                result.innerText = "إجابة صحيحة!";
+                result.classList.remove("incorrect");
+                switchPlayer();
+            } else {
+                result.innerText = "إجابة خاطئة، حاول مرة أخرى.";
+                result.classList.add("incorrect");
+            }
+
+            document.getElementById("playerInput").value = "";
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === "P1" ? "P2" : "P1";
+            document.getElementById("playerTurn").innerText = `${currentPlayer}'s Turn`;
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
